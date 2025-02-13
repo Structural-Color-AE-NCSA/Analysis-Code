@@ -1,0 +1,41 @@
+{
+	"@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
+	"name": "imageanalysis",
+	"version": "0.0.1",
+	"description": "image analysis extractor.",
+	"author": "Bing Zhang <bing@illinois.edu>",
+	"contributors": [
+		"Austin Lomas <jalomas2@illinois.edu>"
+	],
+	"contexts": [{
+		"H_DIST": "http://clowder.ncsa.illinois.edu/metadata/warpage#H_DIST",
+        "h_mu": "http://clowder.ncsa.illinois.edu/metadata/warpage#h_mu",
+        "h_sig": "http://clowder.ncsa.illinois.edu/metadata/warpage#h_sig",
+        "V_DIST": "http://clowder.ncsa.illinois.edu/metadata/warpage#V_DIST",
+        "v_mu": "http://clowder.ncsa.illinois.edu/metadata/warpage#v_mu",
+        "v_sig": "http://clowder.ncsa.illinois.edu/metadata/warpage#v_sig",
+		"S_DIST": "http://clowder.ncsa.illinois.edu/metadata/warpage#S_DIST",
+		"s_mu": "http://clowder.ncsa.illinois.edu/metadata/warpage#s_mu",
+		"s_sig": "http://clowder.ncsa.illinois.edu/metadata/warpage#s_sig"
+	}],
+	"repository": [{
+			"repType": "git",
+			"repUrl": "https://github.com/clowder-framework/extractors-imageanalysis"
+		},
+		{
+			"repType": "docker",
+			"repUrl": "clowder/extractors-imageanalysis"
+		}
+	],
+	"process": {
+		"metadata": [
+			"added.file"
+		]
+	},
+	"external_services": [],
+	"dependencies": [],
+	"bibtex": [],
+	"labels": [
+		"Type/Image"
+	]
+}
