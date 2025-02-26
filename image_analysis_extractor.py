@@ -73,7 +73,7 @@ class ImageAnalysisExtractor(Extractor):
             try:
                 url = SCP_WEB_URL_BASE + 'campaign/%s/update_cell_color' % (campaign_id)
                 result = requests.post(url, data=json.dumps(
-                    {"campaign_id": campaign_id, "cell_id": cell_id, "cell_color": content,
+                    {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, "cell_color": content,
                      "PrintSpeed": PrintSpeed, "BedTemp": BedTemp, "Pressure": Pressure, "ZHeight": ZHeight}),
                                        headers={'Content-type': 'application/json', 'accept': 'application/json'},
                                        verify=False)
