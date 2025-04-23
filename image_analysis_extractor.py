@@ -69,10 +69,10 @@ class ImageAnalysisExtractor(Extractor):
             # upload metadata
             # pyclowder.files.upload_metadata(connector, host, secret_key, parameters['id'], metadata)
             data = None
-            if rank_run % number_prints_trigger_prediction == 0:
+            if rank_run == 0:
                 self.campaign_id = campaign_id
                 self.opt = optimizer_init()
-            if rank_run +1 == number_prints_trigger_prediction:
+            if (rank_run +1) % number_prints_trigger_prediction == 0:
                 accum_h_mu += h_mu
                 h_mu = accum_h_mu/number_prints_trigger_prediction
                 PrintSpeed, BedTemp, Pressure, ZHeight = optimizer_get(self.opt)
