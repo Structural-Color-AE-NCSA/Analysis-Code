@@ -39,9 +39,9 @@ ExpData = pd.DataFrame({
     'ExperimentNumber': []
 })
 
-def optimizer_init():
+def optimizer_init(my_space=space):
     # ----------------------BO framework
-    opt = Optimizer(dimensions=space,
+    opt = Optimizer(dimensions=my_space,
                     base_estimator='gp',  # indirect kernel selection
                     n_initial_points=5,
                     initial_point_generator='random',

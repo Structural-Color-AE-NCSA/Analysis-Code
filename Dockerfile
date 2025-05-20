@@ -17,6 +17,6 @@ COPY requirements.txt ./
 #RUN pip install -r requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY optimizer.py image_analysis_extractor.py Jim_ColorHistogram_ColorScatterPlot.py AnalysisToolbox_Jim.py ColorHistogram_ColorScatterPlot.py extractor_info.json ./
+COPY printability.py optimizer.py image_analysis_extractor.py Jim_ColorHistogram_ColorScatterPlot.py AnalysisToolbox_Jim.py ColorHistogram_ColorScatterPlot.py extractor_info.json ./
 
 CMD python3 image_analysis_extractor.py
