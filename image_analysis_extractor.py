@@ -39,11 +39,14 @@ class ImageAnalysisExtractor(Extractor):
     def process_message(self, connector, host, secret_key, resource, parameters):
         # get input file
         inputfile = None
+        is_success = True
         try:
+            print(f"resource: {resource}")
             file_id = resource['id']
             metadata = resource['metadata']
             campaign_id = metadata['campaign_id']
             cell_id = metadata['cell_id']
+            is_skip = bool(metadata['is_skip'])
             rank_run = metadata['rank_run']
             number_prints_trigger_prediction = metadata['number_prints_trigger_prediction']
             accum_h_mu = float(metadata['accum_h_mu'])
@@ -60,8 +63,24 @@ class ImageAnalysisExtractor(Extractor):
             print('rank_run')
             print('number_prints_trigger_prediction')
             inputfile = pyclowder.files.download(connector, host, secret_key, resource['id'])
-            H_DIST, h_mu, h_sig, V_DIST, v_mu, v_sig, S_DIST, s_mu, s_sig = image_analysis(inputfile)
-            printability_score = process_image(inputfile)
+
+            printability_score = 100
+            h_mu = 0
+            h_sig = 0
+            v_mu = 0
+            v_sig = 0
+            s_mu = 0
+            s_sig = 0
+            if is_skip:
+                is_success = False
+            else:
+                try:
+                    H_DIST, h_mu, h_sig, V_DIST, v_mu, v_sig, S_DIST, s_mu, s_sig = image_analysis(inputfile)
+                    printability_score = process_image(inputfile)
+                except:
+                    is_success = False
+                    traceback.print_exc()
+
             content = {
                 # 'H_DIST': H_DIST.to_json(),
                        'h_mu': h_mu,
@@ -78,22 +97,31 @@ class ImageAnalysisExtractor(Extractor):
             # upload metadata
             # pyclowder.files.upload_metadata(connector, host, secret_key, parameters['id'], metadata)
             data = None
-            if rank_run == 0:
-                self.campaign_id = campaign_id
-                self.opt = optimizer_init(my_space)
-            if (rank_run +1) % number_prints_trigger_prediction == 0:
-                accum_h_mu += h_mu
-                h_mu = accum_h_mu/number_prints_trigger_prediction
-                PrintSpeed, BedTemp, Pressure, ZHeight = optimizer_get(self.opt)
-                _ = optimizer_tell(self.opt, h_mu, PrintSpeed, BedTemp, Pressure, ZHeight)
-                data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, 'rank_run': rank_run,
-                        "printability_score": printability_score,
-                        "cell_color": content,
-                        "PrintSpeed": PrintSpeed, "BedTemp": BedTemp, "Pressure": Pressure, "ZHeight": ZHeight}
+            if is_success:
+                if rank_run == 0:
+                    self.campaign_id = campaign_id
+                    self.opt = optimizer_init(my_space)
+                if (rank_run +1) % number_prints_trigger_prediction == 0:
+                    accum_h_mu += h_mu
+                    h_mu = accum_h_mu/number_prints_trigger_prediction
+                    combined_objective = h_mu * printability_score
+                    PrintSpeed, BedTemp, Pressure, ZHeight = optimizer_get(self.opt)
+                    _ = optimizer_tell(self.opt, combined_objective, PrintSpeed, BedTemp, Pressure, ZHeight)
+                    data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, 'rank_run': rank_run,
+                            "printability_score": printability_score,
+                            "cell_color": content,
+                            "PrintSpeed": PrintSpeed, "BedTemp": BedTemp, "Pressure": Pressure, "ZHeight": ZHeight,
+                            "is_success": True}
+                else:
+                    data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, "cell_color": content,
+                             'rank_run': rank_run,
+                            "printability_score": printability_score,
+                            "is_success": True}
             else:
                 data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, "cell_color": content,
-                         'rank_run': rank_run,
-                        "printability_score": printability_score}
+                        'rank_run': rank_run,
+                        "printability_score": printability_score,
+                        "is_success": False}
             # if self.campaign_id is None or self.campaign_id != campaign_id:
             #     self.campaign_id = campaign_id
             #     self.opt = optimizer_init()
