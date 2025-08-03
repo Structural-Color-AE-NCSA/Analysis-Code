@@ -91,44 +91,37 @@ class ImageAnalysisExtractor(Extractor):
                        # 'S_DIST': S_DIST.to_json(),
                        's_mu': s_mu,
                        's_sig': s_sig}
-            # format the conent as a metadata
-            # metadata = self.get_metadata(content, "file", parameters['id'], host)
-
-            # upload metadata
-            # pyclowder.files.upload_metadata(connector, host, secret_key, parameters['id'], metadata)
             data = None
-            if is_success:
-                if rank_run == 0:
-                    self.campaign_id = campaign_id
-                    self.opt = optimizer_init(my_space)
-                if (rank_run +1) % number_prints_trigger_prediction == 0:
-                    accum_h_mu += h_mu
-                    h_mu = accum_h_mu/number_prints_trigger_prediction
-                    combined_objective = h_mu * printability_score
-                    PrintSpeed, BedTemp, Pressure, ZHeight = optimizer_get(self.opt)
-                    _ = optimizer_tell(self.opt, combined_objective, PrintSpeed, BedTemp, Pressure, ZHeight)
-                    data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, 'rank_run': rank_run,
-                            "printability_score": printability_score,
-                            "cell_color": content,
-                            "PrintSpeed": PrintSpeed, "BedTemp": BedTemp, "Pressure": Pressure, "ZHeight": ZHeight,
-                            "is_success": True}
-                else:
-                    data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, "cell_color": content,
-                             'rank_run': rank_run,
-                            "printability_score": printability_score,
-                            "is_success": True}
-            else:
+            try:
+                if is_success:
+                    if rank_run == 0:
+                        self.campaign_id = campaign_id
+                        self.opt = optimizer_init(my_space)
+                    if (rank_run +1) % number_prints_trigger_prediction == 0:
+                        accum_h_mu += h_mu
+                        h_mu = accum_h_mu/number_prints_trigger_prediction
+                        combined_objective = h_mu * printability_score
+                        PrintSpeed, BedTemp, Pressure, ZHeight = optimizer_get(self.opt)
+                        _ = optimizer_tell(self.opt, combined_objective, PrintSpeed, BedTemp, Pressure, ZHeight)
+                        data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, 'rank_run': rank_run,
+                                "printability_score": printability_score,
+                                "cell_color": content,
+                                "PrintSpeed": PrintSpeed, "BedTemp": BedTemp, "Pressure": Pressure, "ZHeight": ZHeight,
+                                "is_success": True}
+                    else:
+                        data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, "cell_color": content,
+                                 'rank_run': rank_run,
+                                "printability_score": printability_score,
+                                "is_success": True}
+            except:
+                is_success = False
+                traceback.print_exc()
+            if not is_success:
                 data = {"campaign_id": campaign_id, "cell_id": cell_id, "file_id": file_id, "cell_color": content,
                         'rank_run': rank_run,
                         "printability_score": printability_score,
                         "is_success": False}
-            # if self.campaign_id is None or self.campaign_id != campaign_id:
-            #     self.campaign_id = campaign_id
-            #     self.opt = optimizer_init()
-
-            # PrintSpeed, BedTemp, Pressure, ZHeight = optimizer_get(self.opt)
-            # _ = optimizer_tell(self.opt, h_mu, PrintSpeed, BedTemp, Pressure, ZHeight)
-            # store backt tp SCP web application
+            # store backt to SCP web application
             try:
                 url = SCP_WEB_URL_BASE + 'campaign/%s/update_cell_color' % (campaign_id)
                 result = requests.post(url, data=json.dumps(data),
